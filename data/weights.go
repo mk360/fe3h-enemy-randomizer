@@ -54,12 +54,11 @@ func getWeights(difficultyLevel uint) weight {
 
 func GenerateWeightedCharacter(difficulty uint) error {
 	var weights = getWeights(difficulty)
-	fmt.Println(weights)
 	var classRoll = rand.Intn(101)
 	var classRank = getRankFromWeight(weights, classRoll)
 	var class = common.PickNItems(SkillLevels[classRank].Classes, 1)[0]
 	fmt.Println("Class:", class)
-	var weaponsRoll = make([]string, 6)
+	var weaponsRoll = make([]string, difficulty)
 	for i := range weaponsRoll {
 		var slotRoll = getRankFromWeight(weights, rand.Intn(101))
 		var weapon = common.PickNItems(SkillLevels[slotRoll].Weapons, 1)
