@@ -6,50 +6,20 @@ import (
 	"math/rand"
 )
 
-type weight struct {
-	LevelOneOdds   int
-	LevelTwoOdds   int
-	LevelThreeOdds int
-	LevelFourOdds  int
-	LevelFiveOdds  int
-	LevelSixOdds   int
-}
-
-func getWeights(difficultyLevel uint) weight {
-	var weighted weight = weight{}
+func getWeights(difficultyLevel uint) [6]int {
 	if difficultyLevel == 1 {
-		weighted.LevelOneOdds = 80
-		weighted.LevelTwoOdds = 15
-		weighted.LevelThreeOdds = 4
-		weighted.LevelFourOdds = 1
+		return [6]int{75, 25, 0, 0, 0, 0}
 	} else if difficultyLevel == 2 {
-		weighted.LevelOneOdds = 20
-		weighted.LevelTwoOdds = 50
-		weighted.LevelThreeOdds = 15
-		weighted.LevelFourOdds = 5
+		return [6]int{20, 55, 20, 5, 0, 0}
 	} else if difficultyLevel == 3 {
-		weighted.LevelOneOdds = 10
-		weighted.LevelTwoOdds = 20
-		weighted.LevelThreeOdds = 55
-		weighted.LevelFourOdds = 15
+		return [6]int{10, 20, 55, 15, 0, 0}
 	} else if difficultyLevel == 4 {
-		weighted.LevelOneOdds = 1
-		weighted.LevelTwoOdds = 10
-		weighted.LevelThreeOdds = 20
-		weighted.LevelFourOdds = 50
-		weighted.LevelFiveOdds = 19
+		return [6]int{1, 10, 20, 50, 19, 0}
 	} else if difficultyLevel == 5 {
-		weighted.LevelThreeOdds = 15
-		weighted.LevelFourOdds = 25
-		weighted.LevelFiveOdds = 40
-		weighted.LevelSixOdds = 20
+		return [6]int{0, 0, 20, 30, 40, 10}
 	} else {
-		weighted.LevelFourOdds = 5
-		weighted.LevelFiveOdds = 45
-		weighted.LevelSixOdds = 55
+		return [6]int{0, 0, 10, 10, 35, 45}
 	}
-
-	return weighted
 }
 
 func GenerateWeightedCharacter(difficulty uint) error {
@@ -58,45 +28,101 @@ func GenerateWeightedCharacter(difficulty uint) error {
 	var classRank = getRankFromWeight(weights, classRoll)
 	var class = common.PickNItems(SkillLevels[classRank].Classes, 1)[0]
 	fmt.Println("Class:", class)
-	var weaponsRoll = make([]string, difficulty)
-	for i := range weaponsRoll {
+
+	var weapons = make([]string, getItemSlots(difficulty))
+	for i := range weapons {
 		var slotRoll = getRankFromWeight(weights, rand.Intn(101))
 		var weapon = common.PickNItems(SkillLevels[slotRoll].Weapons, 1)
-		weaponsRoll[i] = weapon[0]
+		weapons[i] = weapon[0]
 	}
 
-	fmt.Println(weaponsRoll)
+	fmt.Println("Loadout:", weapons)
+
+	var shouldHaveSpells = rand.Intn(51) > 1
+
+	if shouldHaveSpells {
+		var spellCount = rand.Intn(3)
+		var spells = make([]string, spellCount)
+		for i := range spells {
+			var diceRoll = rand.Intn(101)
+			var spellRoll = getRankFromWeight(weights, diceRoll)
+			var spell = common.PickNItems(SkillLevels[spellRoll].Spells, 1)
+			spells[i] = spell[0]
+		}
+
+		fmt.Println("Spells:", spells)
+	}
+
+	var combatArt = common.PickNItems(COMBAT_ARTS, 1)
+	fmt.Println("Combat Art:", combatArt[0])
+
+	var maxItemCount = rand.Intn(6 - len(weapons))
+	var items []string = common.PickNItems(ITEMS, maxItemCount)
+
+	fmt.Println("Items:", items)
+
+	var shouldDropItem = rand.Intn(101) <= int(SkillLevels[difficulty].ItemDropOdds)
+	var shouldHaveBattalion = rand.Intn(101) <= int(SkillLevels[difficulty].BattalionOdds)
+
+	if shouldDropItem {
+		var inventory = append(weapons, items...)
+		fmt.Println(inventory)
+		var droppedItemIndex = rand.Intn(len(inventory))
+		var droppedItem = inventory[droppedItemIndex]
+		fmt.Println("Dropped Item:", droppedItem)
+	}
+
+	if shouldHaveBattalion {
+		var level = rand.Intn(int(difficulty)) + 1
+		var battalion = common.PickNItems(BATTALIONS, 1)[0]
+		fmt.Println("Battalion:", battalion, "Level:", level)
+	}
+
+	var skillSlots = make([]string, getSkillSlots(difficulty))
+
+	for i := range skillSlots {
+		var slotRoll = getRankFromWeight(weights, rand.Intn(101))
+		var skill = common.PickNItems(SkillLevels[slotRoll].Skills, 1)
+		skillSlots[i] = skill[0]
+	}
+
+	fmt.Println("Skills:", skillSlots)
 
 	return nil
 }
 
-func getRankFromWeight(weighted weight, roll int) uint {
-	var i int = 0
-
-	i += weighted.LevelOneOdds
-	if i >= roll {
-		return 1
-	}
-
-	i += weighted.LevelTwoOdds
-	if i >= roll {
+func getItemSlots(difficulty uint) int {
+	if difficulty <= 2 {
 		return 2
 	}
 
-	i += weighted.LevelThreeOdds
-	if i >= roll {
+	if difficulty <= 5 {
 		return 3
 	}
 
-	i += weighted.LevelFourOdds
-	if i >= roll {
-		return 4
+	return 4
+}
+
+func getSkillSlots(difficulty uint) int {
+	if difficulty <= 3 {
+		return 3
 	}
 
-	i += weighted.LevelFiveOdds
-	if i >= roll {
-		return 5
+	return int(difficulty)
+}
+
+func getRankFromWeight(weighted [6]int, roll int) uint {
+	var lowerBound = 0
+	var higherBound = 0
+	for i, weight := range weighted {
+		higherBound += weight
+		if i > 0 {
+			lowerBound += weighted[i-1]
+		}
+		if lowerBound <= roll && roll <= higherBound {
+			return uint(i + 1)
+		}
 	}
 
-	return 6
+	return uint(1)
 }
