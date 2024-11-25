@@ -27,7 +27,7 @@ func GenerateWeightedCharacter(difficulty uint) error {
 	var classRoll = rand.Intn(101)
 	var classRank = getRankFromWeight(weights, classRoll)
 	var class = common.PickNItems(SkillLevels[classRank].Classes, 1)[0]
-	fmt.Println("Class:", class)
+	fmt.Println("\033[34;1;4mClass:\033[0m", class)
 
 	var weapons = make([]string, getItemSlots(difficulty))
 	for i := range weapons {
@@ -36,7 +36,7 @@ func GenerateWeightedCharacter(difficulty uint) error {
 		weapons[i] = weapon[0]
 	}
 
-	fmt.Println("Loadout:", weapons)
+	fmt.Println("\033[32;1;4mLoadout:\033[0m", weapons)
 
 	var shouldHaveSpells = rand.Intn(51) > 1
 
@@ -50,32 +50,31 @@ func GenerateWeightedCharacter(difficulty uint) error {
 			spells[i] = spell[0]
 		}
 
-		fmt.Println("Spells:", spells)
+		fmt.Println("\033[29;1;4mSpells:\033[0m", spells)
 	}
 
 	var combatArt = common.PickNItems(COMBAT_ARTS, 1)
-	fmt.Println("Combat Art:", combatArt[0])
+	fmt.Println("\033[31;1;4mCombat Art:\033[0m", combatArt[0])
 
 	var maxItemCount = rand.Intn(6 - len(weapons))
 	var items []string = common.PickNItems(ITEMS, maxItemCount)
 
-	fmt.Println("Items:", items)
+	fmt.Println("\033[33;1;4mItems:\033[0m", items)
 
 	var shouldDropItem = rand.Intn(101) <= int(SkillLevels[difficulty].ItemDropOdds)
 	var shouldHaveBattalion = rand.Intn(101) <= int(SkillLevels[difficulty].BattalionOdds)
 
 	if shouldDropItem {
 		var inventory = append(weapons, items...)
-		fmt.Println(inventory)
 		var droppedItemIndex = rand.Intn(len(inventory))
 		var droppedItem = inventory[droppedItemIndex]
-		fmt.Println("Dropped Item:", droppedItem)
+		fmt.Println("\033[31;1;4mDropped Item:\033[0m", droppedItem)
 	}
 
 	if shouldHaveBattalion {
 		var level = rand.Intn(int(difficulty)) + 1
 		var battalion = common.PickNItems(BATTALIONS, 1)[0]
-		fmt.Println("Battalion:", battalion, "Level:", level)
+		fmt.Println("\033[35;1;4mBattalion:\033[0m", battalion, "Level:", level)
 	}
 
 	var skillSlots = make([]string, getSkillSlots(difficulty))
@@ -86,7 +85,7 @@ func GenerateWeightedCharacter(difficulty uint) error {
 		skillSlots[i] = skill[0]
 	}
 
-	fmt.Println("Skills:", skillSlots)
+	fmt.Println("\033[90;1;4mSkills:\033[0m", skillSlots)
 
 	return nil
 }

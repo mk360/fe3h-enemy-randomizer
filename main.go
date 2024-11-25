@@ -27,6 +27,9 @@ func main() {
 		data.LoadLevels()
 		var convInt, _ = strconv.Atoi(os.Args[2])
 		data.GenerateWeightedCharacter(uint(convInt))
+	} else if args[1] == "chest" {
+		var itemPool = append(append(data.ITEMS, data.BEAST_WEAPONS...), data.WEAPONS...)
+		fmt.Println(itemPool[rand.Intn(len(itemPool))])
 	} else {
 		pickCompletelyRandomCharacter()
 		var mapX = 20
