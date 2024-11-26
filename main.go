@@ -30,6 +30,11 @@ func main() {
 	} else if args[1] == "chest" {
 		var itemPool = append(append(data.ITEMS, data.BEAST_WEAPONS...), data.WEAPONS...)
 		fmt.Println(itemPool[rand.Intn(len(itemPool))])
+	} else if args[1] == "beast" {
+		var class = data.BEASTS[rand.Intn(len(data.BEASTS))]
+		var weapon = data.BEAST_WEAPONS[rand.Intn(len(data.BEAST_WEAPONS))]
+		fmt.Println("\033[34;1;4mClass:\033[0m", class)
+		fmt.Println("\033[32;1;4mLoadout:\033[0m", weapon)
 	} else {
 		pickCompletelyRandomCharacter()
 		var mapX = 20
